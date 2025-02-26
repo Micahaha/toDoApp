@@ -10,6 +10,15 @@
   margin-top: 3px;
 }
 
+.add-button:active {
+  margin-top: 3px;
+}
+
+.add-button:hover {
+  cursor: pointer;
+}
+
+
 .add-item-form {
   margin-bottom: 5em;
 }
@@ -69,4 +78,85 @@ body {
   grid-column: span 2;
   text-align: center;
   padding-top: 10px;
+}
+
+/* TodoList.css */
+
+.todo-container {
+  padding: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+}
+
+.todo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.delete-btn {
+  width: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: gray;
+  font-size: 16px;
+}
+
+.todo-list {
+  display: grid;
+  gap: 8px;
+}
+
+.todo-item, .todo-input {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 4px;
+  justify-items: end;
+}
+
+.todo-checkbox {
+  margin-right: 8px;
+}
+
+.todo-textbox {
+  outline: none;
+  border: none;
+  color: gray;
+  font-style: italic;
+  background: transparent;
+  width: 100%;
+}
+
+.todo-name {
+  margin-top: 16px;
+}
+
+.todo-name label {
+  font-weight: bold;
+  display: block;
+}
+
+.todo-name-input {
+  border: 1px solid #ccc;
+  padding: 8px;
+  width: 100%;
+  margin-top: 4px;
+  font-style: italic;
+  color: gray;
+}
+
+.addList-btn {
+  color: black;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+  width: 100%;
 }

@@ -7,15 +7,19 @@ import { useLiveQuery } from 'dexie-react-hooks'
 const db = new Dexie('todoApp')
 
 db.version(1).stores({
-  todos: '++id, title, completed, date'
+  todos: '++id, task, completed, date',
+  todoLists: '++id, title, date, todosId'
+
 })
 
-const { todos } = db
+const { todos, todoLists } = db
 
 
 const App = () => {
   
   const allItems = useLiveQuery(() => todos.toArray(), [])
+  const lists = useLiveQuery(() => todoLists.toArray(), [])
+  
   const completedItems = useLiveQuery(() => todos.where('completed').equals(1).toArray(), [])
   const latestItem = useLiveQuery(() => todos.orderBy('id').last(), [])
   todos.where('completed').equals(1).toArray()
@@ -91,21 +95,51 @@ const App = () => {
           ))}
         </div>
       </div>
-        <div className=".container-css-grid">
-        <div className="left-section">
-          <h2>Task Tracker</h2>
-          <p>Way to go!</p>
-        </div>
-        <div className="right-section">
-          <div className="circle">
-            <span>{completedItems?.length}/{allItems?.length}</span>
+
+
+      
+      <div className="todo-container">
+       {todoLists?.map(({ id, todosId, title }) => {
+        const relatedTodos = todos?.filter(todo => todosId.includes(todo.id));
+        return (
+        <div key={id}>
+          {/* Header */}
+          <div className="todo-header">
+            <h2>{title}</h2>
+          </div>
+
+          {/* Todo Items */}
+          
+          <div className="todo-list">
+          {relatedTodos?.map(({ id: todoId, title: task, completed }) => (
+
+            <div key={todoId} className="todo-item">
+              <input type="checkbox" className="todo-checkbox" />
+              <span className={`black-tex ${completed && 'strike-text'}`}>{task}</span>
+              <i onClick={() => deleteTask(todoId)} className="col s2 material-icons delete-button">delete</i>            
+          </div>
+          ))}
+
+
+
+            {/* Input for new todo */}
+            <div className="todo-input">
+              <input type="checkbox" disabled className="todo-checkbox" />
+              <input type="text" placeholder="Add todo item..." className="todo-textbox" />
+              <button className="-add-btn">+</button>
+            </div>
           </div>
         </div>
-        <div className="footer">
-          <p>‘ToDo {latestItem?.task} successfully added. Got id {latestItem?.id}’;</p>
-        </div>
-      </div>
+        )})}
     </div>
+    
+    {/* Name List */}
+    <form className="todo-name">
+        <label>Give your list a name:</label>
+        <input type="text" placeholder="Name of list..." className="todo-name-input" /> 
+        <button type='submit' className='addList-btn'>Add new list</button>
+      </form>
+</div>
   )
 }
 
