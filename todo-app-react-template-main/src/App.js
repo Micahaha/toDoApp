@@ -24,22 +24,41 @@ const App = () => {
   const latestItem = useLiveQuery(() => todos.orderBy('id').last(), [])
   todos.where('completed').equals(1).toArray()
 
+  const relatedTodos = lists?.map(({ todosId }) => 
+    todos?.filter(todo => todosId.includes(todo.id)) || []
+  );
+
   const addTask = async(event) => {
     event.preventDefault()
     const taskField = document.querySelector('#taskInput')
+    const taskValue = taskField.value // Get the value before clearing the input field
+    taskField.value = ''
 
     await todos.add({
-      task: taskField['value'],
+      task: taskValue,
       completed: 0,
     })
-
-
-
-    taskField['value'] = ''
-
     console.log('====>', taskField.value)
-
   }
+
+    const addList = async(event) => {
+      event.preventDefault()
+      const listInput = document.querySelector('#listNameInput')
+      const listValue = listInput.value
+      listInput.value = ''
+
+      await todoLists.add({
+        title: listValue
+        
+      })
+      console.log('=R==>', listInput.value)
+    }
+  
+
+
+
+
+
 
   const deleteTask = async (id) => todos.delete(id)
   const toggleStatus = async(id, event) => {
@@ -53,6 +72,7 @@ const App = () => {
   console.log('====> ', completedItems);
   console.log('====> ', latestItem);
   console.log('====>', latestItem?.task)
+  console.log('====>', lists)
 
 
   return (    
@@ -99,8 +119,8 @@ const App = () => {
 
       
       <div className="todo-container">
-       {todoLists?.map(({ id, todosId, title }) => {
-        const relatedTodos = todos?.filter(todo => todosId.includes(todo.id));
+       {lists?.map(({ id, title }, index) => {
+        const todosForList = Array.isArray(relatedTodos[index]) ? relatedTodos[index] : [];
         return (
         <div key={id}>
           {/* Header */}
@@ -111,7 +131,7 @@ const App = () => {
           {/* Todo Items */}
           
           <div className="todo-list">
-          {relatedTodos?.map(({ id: todoId, title: task, completed }) => (
+          {todosForList.map(({ id: todoId, task, completed }) => (
 
             <div key={todoId} className="todo-item">
               <input type="checkbox" className="todo-checkbox" />
@@ -125,8 +145,8 @@ const App = () => {
             {/* Input for new todo */}
             <div className="todo-input">
               <input type="checkbox" disabled className="todo-checkbox" />
-              <input type="text" placeholder="Add todo item..." className="todo-textbox" />
-              <button className="-add-btn">+</button>
+              <input type="text" id="listInput" placeholder="Add todo item..." className="todo-textbox" />
+              <button type="submit" className="-add-btn">+</button>
             </div>
           </div>
         </div>
@@ -134,9 +154,9 @@ const App = () => {
     </div>
     
     {/* Name List */}
-    <form className="todo-name">
+    <form className="todo-name" onSubmit={addList}>
         <label>Give your list a name:</label>
-        <input type="text" placeholder="Name of list..." className="todo-name-input" /> 
+        <input type="text" placeholder="Name of list..." className="todo-name-input" id='listNameInput' /> 
         <button type='submit' className='addList-btn'>Add new list</button>
       </form>
 </div>
