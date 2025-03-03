@@ -7,8 +7,8 @@ import { useLiveQuery } from 'dexie-react-hooks'
 const db = new Dexie('todoApp')
 
 db.version(1).stores({
-  todos: '++id, task, completed, date',
-  todoLists: '++id, title, date, todosId'
+  todos: '++id, task, completed, date, listId',
+  todoLists: '++id, title, date'
 
 })
 
@@ -20,13 +20,16 @@ const App = () => {
   const allItems = useLiveQuery(() => todos.toArray(), [])
   const lists = useLiveQuery(() => todoLists.toArray(), [])
   
+  
   const completedItems = useLiveQuery(() => todos.where('completed').equals(1).toArray(), [])
   const latestItem = useLiveQuery(() => todos.orderBy('id').last(), [])
   todos.where('completed').equals(1).toArray()
 
-  const relatedTodos = lists?.map(({ todosId }) => 
-    todos?.filter(todo => todosId.includes(todo.id)) || []
-  );
+  const relatedTodos = lists?.reduce((acc, list) => {
+    acc[list.id] = allItems?.filter(todo => todo.listId === list.id) || [];
+    return acc;
+  }, {});
+  
 
   const addTask = async(event) => {
     event.preventDefault()
@@ -40,6 +43,27 @@ const App = () => {
     })
     console.log('====>', taskField.value)
   }
+  
+  const addTaskToList = async (event, listId) => {
+    event.preventDefault();
+    const taskField = document.querySelector(`#listInput-${listId}`);
+    if (!taskField) {
+      console.error(`Input field #listInput-${listId} not found!`);
+      return; // Stop execution if input is missing
+  }
+
+    const taskValue = taskField.value;
+    taskField.value = '';
+  
+    await todos.add({
+      task: taskValue,
+      completed: 0,
+      listId // Associate todo with correct list
+    });
+  
+    console.log('New task added to list:', listId);
+  };
+  
 
     const addList = async(event) => {
       event.preventDefault()
@@ -120,7 +144,7 @@ const App = () => {
       
       <div className="todo-container">
        {lists?.map(({ id, title }, index) => {
-        const todosForList = Array.isArray(relatedTodos[index]) ? relatedTodos[index] : [];
+        const todosForList = Array.isArray(relatedTodos[id]) ? relatedTodos[id] : [];
         return (
         <div key={id}>
           {/* Header */}
@@ -144,9 +168,11 @@ const App = () => {
 
             {/* Input for new todo */}
             <div className="todo-input">
+            <form className='add-item-form' onSubmit={event => addTaskToList(event, id)}> 
               <input type="checkbox" disabled className="todo-checkbox" />
-              <input type="text" id="listInput" placeholder="Add todo item..." className="todo-textbox" />
+              <input type="text" id={`listInput-${id}`} placeholder="Add todo item..." className="todo-textbox" />
               <button type="submit" className="-add-btn">+</button>
+            </form> 
             </div>
           </div>
         </div>
